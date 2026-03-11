@@ -1,45 +1,56 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
+import React, { useEffect } from 'react';
 import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+  SafeAreaView,
+  PermissionsAndroid,
+  Platform,
+} from 'react-native';
+import { WebView } from 'react-native-webview';
+import ReactNativeBlobUtil from 'react-native-blob-util';
 
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
+const App = () => {
+
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.CAMERA
+      );
+    }
+  }, []);
+
+  const handleDownload = (event: any) => {
+    const { url } = event.nativeEvent;
+
+    const { config, fs } = ReactNativeBlobUtil;
+    const DownloadDir = fs.dirs.DownloadDir;
+
+    config({
+      addAndroidDownloads: {
+        useDownloadManager: true,
+        notification: true,
+        path: DownloadDir + '/downloaded_file',
+        description: 'Downloading file',
+      },
+    }).fetch('GET', url);
+  };
 
   return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
-    </SafeAreaProvider>
-  );
-}
-
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
-
-  return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
+    <SafeAreaView style={{ flex: 1 }}>
+      <WebView
+        source={{ uri: 'https://seedyaios.vercel.app/' }}
+        style={{ flex: 1 }}
+        javaScriptEnabled
+        domStorageEnabled
+        startInLoadingState
+        mediaPlaybackRequiresUserAction={false}
+        allowsInlineMediaPlayback
+        originWhitelist={['*']}
+        onPermissionRequest={(event: any) => {
+          event.nativeEvent.grant(event.nativeEvent.resources);
+        }}
+        onFileDownload={handleDownload}
       />
-    </View>
+    </SafeAreaView>
   );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
+};
 
 export default App;
