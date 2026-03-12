@@ -9,13 +9,15 @@ import { WebView } from 'react-native-webview';
 
 const App = () => {
 
-  const webviewRef = useRef(null);
+  const webviewRef = useRef<any>(null);
 
   useEffect(() => {
 
     if (Platform.OS === 'android') {
       PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.CAMERA
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
       ]);
     }
 
@@ -38,15 +40,34 @@ const App = () => {
 
   const injectedJS = `
   (function() {
-    const originalCreateObjectURL = URL.createObjectURL;
-    URL.createObjectURL = function(blob) {
-      const reader = new FileReader();
-      reader.onloadend = function() {
-        window.ReactNativeWebView.postMessage(reader.result);
-      };
-      reader.readAsDataURL(blob);
-      return originalCreateObjectURL(blob);
+
+    const downloadCSV = (data, filename) => {
+      const blob = new Blob([data], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename || 'export.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     };
+
+    const originalFetch = window.fetch;
+    window.fetch = function() {
+      return originalFetch.apply(this, arguments).then(async response => {
+
+        const contentType = response.headers.get("content-type");
+
+        if (contentType && contentType.includes("text/csv")) {
+          const data = await response.clone().text();
+          downloadCSV(data, "export.csv");
+        }
+
+        return response;
+      });
+    };
+
   })();
   `;
 
@@ -54,13 +75,14 @@ const App = () => {
     <SafeAreaView style={{ flex: 1 }}>
       <WebView
         ref={webviewRef}
-        source={{ uri: 'https://seedyaios.vercel.app/' }}
+        source={{ uri: 'https://chatly.app/' }}
         style={{ flex: 1 }}
         javaScriptEnabled
         domStorageEnabled
         injectedJavaScript={injectedJS}
         originWhitelist={['*']}
         startInLoadingState
+
         onPermissionRequest={(event:any)=>{
           event.nativeEvent.grant(event.nativeEvent.resources)
         }}
