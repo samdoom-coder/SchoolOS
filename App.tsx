@@ -41,7 +41,7 @@ const App = () => {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <WebView
-        source={{ uri: 'https://chatly.app/' }}
+        source={{ uri: 'https://seedyaios.vercel.app/' }}
         style={{ flex: 1 }}
         javaScriptEnabled
         domStorageEnabled
