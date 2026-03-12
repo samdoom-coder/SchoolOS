@@ -11,55 +11,46 @@ import ReactNativeBlobUtil from 'react-native-blob-util';
 const App = () => {
 
   useEffect(() => {
-    if (Platform.OS === 'android') {
-      PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.CAMERA
-      );
-    }
+    const requestPermissions = async () => {
+      if (Platform.OS === 'android') {
+        await PermissionsAndroid.requestMultiple([
+          PermissionsAndroid.PERMISSIONS.CAMERA,
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
+        ]);
+      }
+    };
+
+    requestPermissions();
   }, []);
 
   const downloadFile = (url: string) => {
     const { config, fs } = ReactNativeBlobUtil;
 
     const DownloadDir = fs.dirs.DownloadDir;
-    const path = DownloadDir + '/file_' + Date.now();
+    const filePath = DownloadDir + '/download_' + Date.now();
 
     config({
       addAndroidDownloads: {
         useDownloadManager: true,
         notification: true,
-        path: path,
+        path: filePath,
         description: 'Downloading file',
       },
     }).fetch('GET', url);
   };
 
   const handleNavigation = (request: any) => {
-    const url = request.url;
+    const url = request.url.toLowerCase();
 
-    const downloadableExtensions = [
-      '.pdf',
-      '.csv',
-      '.xls',
-      '.xlsx',
-      '.doc',
-      '.docx',
-      '.ppt',
-      '.pptx',
-      '.txt',
-      '.zip',
-      '.rar',
-      '.7z',
-      '.jpg',
-      '.jpeg',
-      '.png',
-      '.gif',
-      '.mp4',
-      '.mp3',
-      '.apk'
+    const downloadTypes = [
+      '.pdf','.csv','.xls','.xlsx','.doc','.docx',
+      '.ppt','.pptx','.zip','.rar','.7z',
+      '.jpg','.jpeg','.png','.gif',
+      '.mp4','.mp3','.apk'
     ];
 
-    if (downloadableExtensions.some(ext => url.toLowerCase().includes(ext))) {
+    if (downloadTypes.some(ext => url.endsWith(ext))) {
       downloadFile(url);
       return false;
     }
@@ -80,13 +71,12 @@ const App = () => {
         javaScriptEnabled
         domStorageEnabled
         startInLoadingState
-        mediaPlaybackRequiresUserAction={false}
-        allowsInlineMediaPlayback
         originWhitelist={['*']}
+        setSupportMultipleWindows={false}
+        onShouldStartLoadWithRequest={handleNavigation}
         onPermissionRequest={(event: any) => {
           event.nativeEvent.grant(event.nativeEvent.resources);
         }}
-        onShouldStartLoadWithRequest={handleNavigation}
       />
     </SafeAreaView>
   );
