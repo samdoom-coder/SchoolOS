@@ -75,7 +75,7 @@ const App = () => {
     <SafeAreaView style={{ flex: 1 }}>
       <WebView
         ref={webviewRef}
-        source={{ uri: 'https://www.seedyai.com/' }}
+        source={{ uri: 'https://seedyaios.vercel.app/' }}
         style={{ flex: 1 }}
         javaScriptEnabled
         domStorageEnabled
