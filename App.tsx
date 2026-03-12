@@ -6,52 +6,27 @@ import {
   Linking
 } from 'react-native';
 import { WebView } from 'react-native-webview';
-import ReactNativeBlobUtil from 'react-native-blob-util';
 
 const App = () => {
 
   useEffect(() => {
-    const requestPermissions = async () => {
-      if (Platform.OS === 'android') {
-        await PermissionsAndroid.requestMultiple([
-          PermissionsAndroid.PERMISSIONS.CAMERA,
-          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
-        ]);
-      }
-    };
-
-    requestPermissions();
+    if (Platform.OS === 'android') {
+      PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.CAMERA
+      ]);
+    }
   }, []);
-
-  const downloadFile = (url: string) => {
-    const { config, fs } = ReactNativeBlobUtil;
-
-    const DownloadDir = fs.dirs.DownloadDir;
-    const filePath = DownloadDir + '/download_' + Date.now();
-
-    config({
-      addAndroidDownloads: {
-        useDownloadManager: true,
-        notification: true,
-        path: filePath,
-        description: 'Downloading file',
-      },
-    }).fetch('GET', url);
-  };
 
   const handleNavigation = (request: any) => {
     const url = request.url.toLowerCase();
 
     const downloadTypes = [
       '.pdf','.csv','.xls','.xlsx','.doc','.docx',
-      '.ppt','.pptx','.zip','.rar','.7z',
-      '.jpg','.jpeg','.png','.gif',
-      '.mp4','.mp3','.apk'
+      '.zip','.rar','.jpg','.jpeg','.png','.gif'
     ];
 
-    if (downloadTypes.some(ext => url.endsWith(ext))) {
-      downloadFile(url);
+    if (downloadTypes.some(ext => url.includes(ext))) {
+      Linking.openURL(url);
       return false;
     }
 
@@ -66,7 +41,7 @@ const App = () => {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <WebView
-        source={{ uri: 'https://seedyaios.vercel.app/' }}
+        source={{ uri: 'https://chatly.app/' }}
         style={{ flex: 1 }}
         javaScriptEnabled
         domStorageEnabled
