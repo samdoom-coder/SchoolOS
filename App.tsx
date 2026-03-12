@@ -75,7 +75,7 @@ const App = () => {
     <SafeAreaView style={{ flex: 1 }}>
       <WebView
         ref={webviewRef}
-        source={{ uri: 'https://chatly.app/' }}
+        source={{ uri: 'https://www.seedyai.com/' }}
         style={{ flex: 1 }}
         javaScriptEnabled
         domStorageEnabled
